@@ -1,0 +1,17 @@
+
+# Processed datasets
+**/data/processed/*.npy
+
+# Raw datasets
+**/data/raw/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+.venv/
+venv/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
