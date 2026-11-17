@@ -1,0 +1,37 @@
+
+{
+    "project": "WEB-BASED STATIC MALWARE DETECTION SYSTEM FOR WINDOWS PE FILES",
+    "dataset": "EMBER 2018 v2",
+    "feature_version": 2,
+    "feature_dimensions": 2381,
+
+    "primary_model": {
+        "name": "LightGBM",
+        "threshold": 0.52
+    },
+
+    "comparison_model": {
+        "name": "Random Forest",
+        "threshold": 0.50
+    },
+
+    "final_test_evaluation": {
+        "test_samples": 30000,
+        "lightgbm": {
+            "accuracy": 0.935367,
+            "precision": 0.922226,
+            "recall": 0.952252,
+            "f1_score": 0.936998,
+            "roc_auc": 0.984928,
+            "false_positive_rate": 0.081841
+        },
+        "random_forest": {
+            "accuracy": 0.906100,
+            "precision": 0.893644,
+            "recall": 0.923920,
+            "f1_score": 0.908530,
+            "roc_auc": 0.970854,
+            "false_positive_rate": 0.112061
+        }
+    }
+}
