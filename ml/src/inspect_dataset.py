@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 
+# EMBER dataset folder
 DATASET_DIR = Path(r"C:\Users\user\Documents\DEGREE\SEM 6\CSP650\ember2018")
 
 def inspect_dataset():

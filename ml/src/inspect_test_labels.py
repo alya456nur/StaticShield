@@ -3,7 +3,7 @@ import json
 from collections import Counter
 from pathlib import Path
 
-# Change this to your actual EMBER dataset folder
+# EMBER dataset folder
 DATASET_DIR = Path(r"C:\Users\user\Documents\DEGREE\SEM 6\CSP650\ember2018")
 
 TEST_FILE = DATASET_DIR / "test_features.jsonl"

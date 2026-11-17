@@ -11,6 +11,7 @@ from ember.features import PEFeatureExtractor
 # ============================================================
 # CONFIGURATION
 # ============================================================
+# EMBER dataset folder
 DATASET_DIR = Path(r"C:\Users\user\Documents\DEGREE\SEM 6\CSP650\ember2018")
 
 # Project directories
