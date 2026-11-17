@@ -29,7 +29,7 @@ MAX_SAMPLES = 30_000
 VALIDATION_SIZE = 0.20
 
 THRESHOLDS = np.round(
-    np.arange(0.20, 0.801, 0.05), 2
+    np.arange(0.50, 0.551, 0.01), 2
 )
 
 
