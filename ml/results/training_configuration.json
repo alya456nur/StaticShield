@@ -1,0 +1,7 @@
+{
+    "random_state": 42,
+    "max_samples": 30000,
+    "validation_size": 0.2,
+    "feature_dimensions": 2381,
+    "feature_version": 2
+}

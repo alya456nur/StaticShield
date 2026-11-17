@@ -5,6 +5,10 @@
 # Raw datasets
 **/data/raw/
 
+# Trained models
+models/*.joblib
+models/*.pkl
+
 # Python cache
 __pycache__/
 *.py[cod]
