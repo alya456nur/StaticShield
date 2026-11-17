@@ -77,30 +77,6 @@ The models will be evaluated using:
 - Confusion Matrix
 - False Positive Rate
 
-## Project Structure
-
-```text
-MalwareDetectionSystem/
-│
-├── app.py
-├── frontend/
-│
-├── ml/
-│   ├── dataset/
-│   │   └── ember/
-│   ├── notebooks/
-│   ├── src/
-│   └── results/
-│
-├── models/
-│
-├── database/
-│
-├── uploads/
-│
-└── requirements.txt
-```
-
 ## Project Status
 
 **Currently under development.**
