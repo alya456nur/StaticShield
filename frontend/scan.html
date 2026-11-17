@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Scan File | StaticShield</title>
+<link rel="stylesheet" href="static/css/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<header class="topbar"><div class="container nav">
+  <a class="brand" href="index.html">
+    <div class="brand-mark" aria-hidden="true">
+      <i class="fa-solid fa-shield-virus"></i>
+    </div>
+    <span>StaticShield</span>
+  </a>
+  <nav class="nav-links" aria-label="Main navigation"><a href="index.html">Home</a><a class="active" href="scan.html" aria-current="page">Scan</a><a href="history.html">History</a><a href="about.html">About</a></nav>
+</div></header>
+
+<main class="page">
+<div class="container">
+  <div class="breadcrumb">Home / Scan</div>
+  <h1>Scan a PE file</h1>
+  <p class="page-intro">Upload a Portable Executable (.exe) file. The proposed system performs static analysis without executing the uploaded file, extracts relevant static features, and sends them to the trained classification model.</p>
+
+  <section class="panel scan-card" style="margin-top:22px">
+    <div id="scanForm">
+    <div id="dropzone" class="dropzone">
+      <div class="upload-icon">↑</div>
+      <h3>Drop your .exe file here</h3>
+      <p>or choose a file from your computer. This prototype accepts Windows PE executable files only.</p>
+      <button id="pickBtn" class="btn btn-primary">Choose file</button>
+      <input id="fileInput" class="hidden" type="file" accept=".exe,application/vnd.microsoft.portable-executable">
+    </div>
+
+    <div id="filePreview" class="file-preview hidden">
+      <div class="file-meta">
+        <div class="file-icon">EXE</div>
+        <div><strong id="fileName">file.exe</strong><small id="fileSize">—</small></div>
+      </div>
+      <button id="clearBtn" class="btn btn-ghost">Remove</button>
+    </div>
+
+    <div class="controls">
+      <div id="uploadStatus" class="status" role="status" aria-live="polite">No file selected.</div>
+      <button id="scanBtn" class="btn btn-primary">Analyze file</button>
+    </div>
+    <div class="disclaimer">This is a prototype only</div>
+    </div>
+
+    <section id="analysisProgress" class="analysis-progress hidden" aria-labelledby="analysisTitle">
+      <div class="analysis-visual">
+        <div class="scan-orbit" aria-hidden="true">
+          <div class="scan-orbit-ring scan-orbit-ring-one"></div>
+          <div class="scan-orbit-ring scan-orbit-ring-two"></div>
+          <div class="scan-core"><span>MG</span></div>
+          <div class="scan-beam"></div>
+        </div>
+        <div class="analysis-channel"><span class="online-dot" aria-hidden="true"></span> Secure analysis channel</div>
+        <div class="analysis-file-chip">
+          <div class="file-icon">EXE</div>
+          <div class="analysis-file-details"><span class="kicker">Selected sample</span><strong id="analysisFileName">file.exe</strong></div>
+        </div>
+      </div>
+
+      <div class="analysis-content">
+        <div class="eyebrow">Analysis in progress</div>
+        <h2 id="analysisTitle">Inspecting file characteristics</h2>
+        <p id="analysisMessage" class="analysis-message" role="status" aria-live="polite">Checking the file package and PE format...</p>
+        <div class="progress-meta"><span>Analysis sequence</span><strong id="analysisProgressLabel">08%</strong></div>
+        <div id="analysisProgressBar" class="progress-track" role="progressbar" aria-label="Prototype analysis sequence" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8">
+          <span class="progress-fill"></span>
+        </div>
+        <ol class="analysis-steps">
+          <li data-analysis-step data-state="active" aria-current="step"><span class="step-index">01</span><span class="step-label">Validate file</span><span class="step-state">In progress</span></li>
+          <li data-analysis-step data-state="queued"><span class="step-index">02</span><span class="step-label">Prepare features</span><span class="step-state">Queued</span></li>
+          <li data-analysis-step data-state="queued"><span class="step-index">03</span><span class="step-label">Classify sample</span><span class="step-state">Queued</span></li>
+          <li data-analysis-step data-state="queued"><span class="step-index">04</span><span class="step-label">Build report</span><span class="step-state">Queued</span></li>
+        </ol>
+        <p class="analysis-footnote">Demo mode · The current prototype simulates its classification response.</p>
+      </div>
+    </section>
+  </section>
+</div>
+</main>
+
+<footer class="footer"><div class="container"><p>StaticShield · Static analysis prototype for controlled academic demonstration.</p></div></footer>
+<script src="static/js/app.js"></script>
+</body>
+</html>
