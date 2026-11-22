@@ -1,81 +1,77 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MalwareGuard | Static Malware Detection</title>
-<link rel="stylesheet" href="static/css/styles.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="StaticShield - a web-based static malware detection prototype for Windows PE files.">
+  <title>Home | StaticShield</title>
+  <link rel="stylesheet" href="static/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <header class="topbar">
   <div class="container nav">
     <a class="brand" href="index.html">
-      <div class="brand-mark" aria-hidden="true">
-        <i class="fa-solid fa-shield-virus"></i>
-      </div>
+      <div class="brand-mark" aria-hidden="true"><i class="fa-solid fa-shield-virus"></i></div>
       <span>StaticShield</span>
     </a>
     <nav class="nav-links" aria-label="Main navigation">
       <a class="active" href="index.html" aria-current="page">Home</a>
-      <a href="scan.html">Scan</a>
-      <a href="history.html">History</a>
-      <a href="about.html">About</a>
+      <a class="" href="scan.html" >Scan</a>
+      <a class="" href="history.html" >History</a>
+      <a class="" href="about.html" >About</a>
     </nav>
   </div>
 </header>
 
 <main>
-<section class="hero">
-  <div class="container hero-grid">
-    <div>
-      <div class="eyebrow">Machine Learning-Based Static Malware Detection</div>
-      <h1>Analyze a PE file before you trust it.</h1>
-      <p class="lead">Upload a Windows executable and use static file characteristics to classify it as <strong>Malware</strong> or <strong>Benign</strong>. The prototype is designed around the EMBER dataset and a machine-learning detection pipeline.</p>
-      <div class="hero-points">
-        <span class="pill">Static Analysis</span>
-        <span class="pill">EMBER Dataset</span>
-        <span class="pill">Random Forest</span>
-        <span class="pill">LightGBM</span>
-        <span class="pill">No File Execution</span>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <div class="eyebrow">Machine-learning-based static malware detection</div>
+        <h1>Analyze a Windows executable before you trust it.</h1>
+        <p class="lead">Upload a Windows PE (.exe) file to examine its static characteristics and classify it as <strong>Malware</strong> or <strong>Benign</strong> using a trained machine-learning model.</p>
+        <div class="hero-points">
+          <span class="pill">Static Analysis</span>
+          <span class="pill">EMBER v2</span>
+          <span class="pill">LightGBM</span>
+          <span class="pill">Random Forest Comparison</span>
+        </div>
+        <div class="hero-cta"><a class="btn btn-primary" href="scan.html">Start a scan</a></div>
       </div>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="scan.html">Start a scan</a>
-      </div>
-    </div>
-    <div class="hero-card">
-      <div class="kicker">Fast & Secure</div>
-      <h3>Instant analysis. Zero execution.</h3>
-      <p>Skip the complex sandboxes. We tear down the file's structure and use machine learning to identify malicious patterns in milliseconds—without ever running the code to keep your environment safe.</p>
-      <div class="model-strip">
-        <div><div class="kicker">Analysis type</div><div class="model-tag">Static only</div></div>
-        <div><div class="kicker">Classification</div><div class="model-tag">Binary</div></div>
+      <div class="hero-card">
+        <div class="kicker">Analysis method</div>
+        <h3>Static analysis only</h3>
+        <p>The uploaded executable is inspected to extract PE features. The file is not launched or executed by the detection process.</p>
+        <div class="model-strip">
+          <div><div class="kicker">Primary classifier</div><div class="model-tag">LightGBM</div></div>
+          <div><div class="kicker">Feature set</div><div class="model-tag">2,381 features</div></div>
+        </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="section">
-  <div class="container">
-    <div class="section-head">
-      <div><h2>What the prototype checks</h2><p>Aligned with the proposed FYP static-analysis pipeline.</p></div>
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <div><h2>Static features</h2><p>EMBER features describe different characteristics of Windows PE files.</p></div>
+      </div>
+      <div class="feature-grid">
+        <div class="panel small-card"><h4>PE Structure</h4><p>Header, section and data-directory characteristics.</p></div>
+        <div class="panel small-card"><h4>Imports & Exports</h4><p>Information about imported and exported functions.</p></div>
+        <div class="panel small-card"><h4>Strings</h4><p>String-related characteristics extracted from the file.</p></div>
+        <div class="panel small-card"><h4>Byte Patterns</h4><p>Byte histogram and byte-entropy characteristics.</p></div>
+      </div>
     </div>
-    <div class="feature-grid">
-      <div class="panel small-card"><h4>PE Header Features</h4><p>Structural characteristics of Portable Executable files.</p></div>
-      <div class="panel small-card"><h4>Imported / Exported Functions</h4><p>Function-level characteristics used as static indicators.</p></div>
-      <div class="panel small-card"><h4>Strings & Entropy</h4><p>Textual patterns and randomness-related characteristics.</p></div>
-      <div class="panel small-card"><h4>Byte / Opcode Features</h4><p>Low-level patterns used by the classification pipeline.</p></div>
-    </div>
-  </div>
-</section>
+  </section>
 </main>
 
 <footer class="footer">
   <div class="container footer-grid">
-    <div><h4>MalwareGuard</h4><div>This interface is a university FYP prototype for Machine Learning-based static malware detection.</div></div>
-    <div><h4>Product</h4><a href="scan.html">Scan File</a><a href="history.html">Scan History</a></div>
-    <div><h4>Research</h4><a href="about.html">Project Overview</a><a href="about.html#methodology">Methodology</a></div>
-    <div><h4>Safety</h4><div>Files are treated as untrusted executable content. Only use files in a controlled testing environment.</div></div>
+    <div><h4>StaticShield</h4><div>University FYP prototype for static malware detection of Windows PE files.</div></div>
+    <div><h4>Pages</h4><a href="scan.html">Scan File</a><a href="history.html">Scan History</a></div>
+    <div><h4>Project</h4><a href="about.html">Project Overview</a><a href="about.html#methodology">Methodology</a></div>
+    <div><h4>Note</h4><div>A benign classification is not a guarantee that a file is safe.</div></div>
   </div>
 </footer>
 </body>

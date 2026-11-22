@@ -1,33 +1,40 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Scan History | StaticShield</title>
-<link rel="stylesheet" href="static/css/styles.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="StaticShield - a web-based static malware detection prototype for Windows PE files.">
+  <title>Scan History | StaticShield</title>
+  <link rel="stylesheet" href="static/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<header class="topbar"><div class="container nav">
-  <a class="brand" href="index.html">
-    <div class="brand-mark" aria-hidden="true">
-      <i class="fa-solid fa-shield-virus"></i>
-    </div>
-    <span>StaticShield</span>
-  </a>
-  <nav class="nav-links" aria-label="Main navigation"><a href="index.html">Home</a><a href="scan.html">Scan</a><a class="active" href="history.html" aria-current="page">History</a><a href="about.html">About</a></nav>
-</div></header>
+<header class="topbar">
+  <div class="container nav">
+    <a class="brand" href="index.html">
+      <div class="brand-mark" aria-hidden="true"><i class="fa-solid fa-shield-virus"></i></div>
+      <span>StaticShield</span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a class="" href="index.html" >Home</a>
+      <a class="" href="scan.html" >Scan</a>
+      <a class="active" href="history.html" aria-current="page">History</a>
+      <a class="" href="about.html" >About</a>
+    </nav>
+  </div>
+</header>
 
 <main class="page">
-<div class="container">
-  <div class="breadcrumb">Home / History</div>
-  <h1>Detection History</h1>
-  <p class="page-intro">A local prototype history of scanned files. No account or registration is required.</p>
-  <section id="historyBody"></section>
-</div>
+  <div class="container">
+    <div class="breadcrumb">Home / History</div>
+    <h1>Scan History</h1>
+    <p class="page-intro">Previous scan results saved locally in this browser. No account or registration is required.</p>
+    <section id="historyBody" aria-live="polite"></section>
+    <p class="analysis-footnote">History is browser-specific and may be cleared when browser site data is removed.</p>
+  </div>
 </main>
 
-<footer class="footer"><div class="container"><p>StaticShield · Static analysis prototype for controlled academic demonstration.</p></div></footer>
+<footer class="footer"><div class="container"><p>StaticShield · Static malware detection prototype.</p></div></footer>
 <script src="static/js/app.js"></script>
 </body>
 </html>

@@ -1,60 +1,68 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>About the Project | StaticShield</title>
-<link rel="stylesheet" href="static/css/styles.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="StaticShield - a web-based static malware detection prototype for Windows PE files.">
+  <title>About the Project | StaticShield</title>
+  <link rel="stylesheet" href="static/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<header class="topbar"><div class="container nav">
-  <a class="brand" href="index.html">
-    <div class="brand-mark" aria-hidden="true">
-      <i class="fa-solid fa-shield-virus"></i>
-    </div><span>StaticShield</span>
-  </a>
-  <nav class="nav-links" aria-label="Main navigation"><a href="index.html">Home</a><a href="scan.html">Scan</a><a href="history.html">History</a><a class="active" href="about.html" aria-current="page">About</a></nav>
-</div></header>
+<header class="topbar">
+  <div class="container nav">
+    <a class="brand" href="index.html">
+      <div class="brand-mark" aria-hidden="true"><i class="fa-solid fa-shield-virus"></i></div>
+      <span>StaticShield</span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a class="" href="index.html" >Home</a>
+      <a class="" href="scan.html" >Scan</a>
+      <a class="" href="history.html" >History</a>
+      <a class="active" href="about.html" aria-current="page">About</a>
+    </nav>
+  </div>
+</header>
 
 <main class="page">
-<div class="container">
-  <div class="breadcrumb">Home / About</div>
-  <h1>Project Overview</h1>
-  <p class="page-intro">StaticShield is a proposed web-based prototype for the FYP titled <strong>Machine Learning-Based Static Malware Analysis</strong>.</p>
+  <div class="container">
+    <div class="breadcrumb">Home / About</div>
+    <h1>Project Overview</h1>
+    <p class="page-intro">StaticShield is a web-based prototype for detecting malware in Windows PE files through static analysis and machine learning.</p>
 
-  <div class="info-grid">
-    <div class="panel info-card"><div class="kicker">Research focus</div><h3>Static malware analysis</h3><p>Files are analyzed through static characteristics without executing the malware. This supports safer and more efficient screening.</p></div>
-    <div class="panel info-card"><div class="kicker">Dataset</div><h3>EMBER</h3><p>The model-development pipeline uses the publicly available EMBER dataset containing labeled malware and benign samples with static PE-related features.</p></div>
-    <div class="panel info-card"><div class="kicker">Models</div><h3>Random Forest + XGBoost</h3><p>Both models are planned for development and comparison. The best-performing model will be selected for the prototype deployment.</p></div>
+    <div class="info-grid">
+      <div class="panel info-card"><div class="kicker">Research focus</div><h3>Static malware detection</h3><p>The system examines file characteristics without executing the uploaded executable.</p></div>
+      <div class="panel info-card"><div class="kicker">Dataset</div><h3>EMBER 2018 v2</h3><p>The models were developed using labelled PE samples and 2,381-dimensional static feature vectors.</p></div>
+      <div class="panel info-card"><div class="kicker">Models</div><h3>LightGBM & Random Forest</h3><p>Both classifiers were trained and evaluated. LightGBM is used as the primary model in the current prototype.</p></div>
+    </div>
+
+    <section id="methodology" class="panel scan-card" style="margin-top:18px">
+      <div class="section-head"><div><h2>Machine Learning Development Lifecycle</h2><p>Development and evaluation workflow</p></div></div>
+      <div class="feature-grid">
+        <div class="small-card"><h4>1. Problem Definition</h4><p>Define the malware-detection problem, objectives and scope.</p></div>
+        <div class="small-card"><h4>2. Data Collection</h4><p>Use the EMBER 2018 v2 dataset and its labelled samples.</p></div>
+        <div class="small-card"><h4>3. Data Preprocessing</h4><p>Prepare the static feature vectors and training/testing data.</p></div>
+        <div class="small-card"><h4>4. Model Development</h4><p>Train LightGBM and Random Forest classifiers.</p></div>
+        <div class="small-card"><h4>5. Model Evaluation</h4><p>Evaluate accuracy, precision, recall, F1-score, ROC-AUC and false positive rate.</p></div>
+        <div class="small-card"><h4>6. Testing & Validation</h4><p>Test feature extraction, model prediction and web application functionality.</p></div>
+        <div class="small-card"><h4>7. Deployment</h4><p>Integrate the selected classifier into the local web-based prototype.</p></div>
+      </div>
+    </section>
+
+    <section class="panel scan-card" style="margin-top:18px">
+      <div class="section-head"><div><h2>Detection Output</h2><p>Information displayed for each scan.</p></div></div>
+      <div class="result-info">
+        <div class="stat"><label>Prediction</label><strong>Malware / Benign</strong></div>
+        <div class="stat"><label>Malicious probability</label><strong>Model probability</strong></div>
+        <div class="stat"><label>Algorithm</label><strong>LightGBM</strong></div>
+        <div class="stat"><label>File information</label><strong>Name and size</strong></div>
+        <div class="stat"><label>Scan date</label><strong>Timestamp</strong></div>
+        <div class="stat"><label>Analysis type</label><strong>Static analysis</strong></div>
+      </div>
+      <p class="analysis-footnote">Scan history is stored in this browser. It is not saved to a centralized database.</p>
+    </section>
   </div>
-
-  <section id="methodology" class="panel scan-card" style="margin-top:18px">
-    <div class="section-head"><div><h2>Machine Learning Development Lifecycle</h2><p>Proposed development methodology</p></div></div>
-    <div class="feature-grid">
-      <div class="small-card"><h4>1. Problem Definition</h4><p>Define the malware-detection problem, objectives, requirements, and scope.</p></div>
-      <div class="small-card"><h4>2. Data Collection</h4><p>Obtain and inspect the EMBER dataset and its labels/features.</p></div>
-      <div class="small-card"><h4>3. Data Preprocessing</h4><p>Clean data, select static features, and prepare training/testing sets.</p></div>
-      <div class="small-card"><h4>4. Model Development</h4><p>Train Random Forest and LightGBM classifiers.</p></div>
-      <div class="small-card"><h4>5. Model Evaluation</h4><p>Compare accuracy, precision, recall, F1-score, ROC-AUC, and false positive rate.</p></div>
-      <div class="small-card"><h4>6. Testing & Validation</h4><p>Check functionality, integration, reliability, and generalization on unseen samples.</p></div>
-      <div class="small-card"><h4>7. Deployment</h4><p>Integrate the selected model into the web-based prototype for file classification.</p></div>
-    </div>
-  </section>
-
-  <section class="panel scan-card" style="margin-top:18px">
-    <div class="section-head"><div><h2>Detection Output</h2><p>Information planned for the result page and database.</p></div></div>
-    <div class="result-info">
-      <div class="stat"><label>Prediction</label><strong>Malware / Benign</strong></div>
-      <div class="stat"><label>Confidence</label><strong>Model probability</strong></div>
-      <div class="stat"><label>Algorithm</label><strong>Selected trained model</strong></div>
-      <div class="stat"><label>File information</label><strong>Name, type, size</strong></div>
-      <div class="stat"><label>Scan date</label><strong>Timestamp</strong></div>
-      <div class="stat"><label>Analysis type</label><strong>Static analysis</strong></div>
-    </div>
-  </section>
-</div>
 </main>
-<footer class="footer"><div class="container"><div>University FYP prototype — designed for controlled academic demonstration.</div></div></footer>
+<footer class="footer"><div class="container"><p>StaticShield · University FYP prototype.</p></div></footer>
 </body>
 </html>

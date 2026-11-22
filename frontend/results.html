@@ -1,36 +1,40 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Scan Result | StaticShield</title>
-<link rel="stylesheet" href="static/css/styles.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="StaticShield - a web-based static malware detection prototype for Windows PE files.">
+  <title>Scan Result | StaticShield</title>
+  <link rel="stylesheet" href="static/css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-<header class="topbar"><div class="container nav">
-  <a class="brand" href="index.html">
-    <div class="brand-mark" aria-hidden="true">
-      <i class="fa-solid fa-shield-virus"></i>
-    </div>
-    <span>StaticShield</span>
-  </a>
-  <nav class="nav-links" aria-label="Main navigation"><a href="index.html">Home</a><a class="active" href="scan.html" aria-current="page">Scan</a><a href="history.html">History</a><a href="about.html">About</a></nav>
-</div></header>
+<header class="topbar">
+  <div class="container nav">
+    <a class="brand" href="index.html">
+      <div class="brand-mark" aria-hidden="true"><i class="fa-solid fa-shield-virus"></i></div>
+      <span>StaticShield</span>
+    </a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a class="" href="index.html" >Home</a>
+      <a class="active" href="scan.html" aria-current="page">Scan</a>
+      <a class="" href="history.html" >History</a>
+      <a class="" href="about.html" >About</a>
+    </nav>
+  </div>
+</header>
 
 <main class="page">
-<div class="container">
-  <div class="breadcrumb">Home / Scan Result</div>
-  <h1>Analysis Result</h1>
-  <p class="page-intro">
-    Actual static-analysis results generated using the trained LightGBM model.
-  </p>
-  <div id="resultRoot"></div>
-  <div class="hero-cta"><a class="btn btn-ghost" href="scan.html">Scan another file</a></div>
-</div>
+  <div class="container">
+    <div class="breadcrumb">Home / Scan / Result</div>
+    <h1>Analysis Result</h1>
+    <p class="page-intro">Classification result produced by the trained LightGBM model using EMBER v2 static features.</p>
+    <div id="resultRoot"></div>
+    <div class="hero-cta"><a class="btn btn-ghost" href="scan.html">Scan another file</a></div>
+  </div>
 </main>
 
-<footer class="footer"><div class="container"><p>StaticShield · Static analysis prototype for controlled academic demonstration.</p></div></footer>
+<footer class="footer"><div class="container"><p>StaticShield · Static malware detection prototype.</p></div></footer>
 <script src="static/js/app.js"></script>
 </body>
 </html>
