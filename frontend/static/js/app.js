@@ -17,124 +17,194 @@ function esc(v) {
   return String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+
 function setupScanner() {
-  const input = document.querySelector("#fileInput");
-  const drop = document.querySelector("#dropzone");
-  const pick = document.querySelector("#pickBtn");
-  const preview = document.querySelector("#filePreview");
-  const nameEl = document.querySelector("#fileName");
-  const sizeEl = document.querySelector("#fileSize");
-  const scanBtn = document.querySelector("#scanBtn");
-  const clearBtn = document.querySelector("#clearBtn");
-  const status = document.querySelector("#uploadStatus");
-  const scanForm = document.querySelector("#scanForm");
-  const analysisPanel = document.querySelector("#analysisProgress");
-  const analysisFileName = document.querySelector("#analysisFileName");
-  const analysisMessage = document.querySelector("#analysisMessage");
-  const analysisProgressLabel = document.querySelector("#analysisProgressLabel");
-  const progressTrack = document.querySelector("#analysisProgressBar");
-  const progressFill = progressTrack?.querySelector(".progress-fill");
-  const analysisSteps = [...document.querySelectorAll("[data-analysis-step]")];
+    const input = document.querySelector("#fileInput");
+    const drop = document.querySelector("#dropzone");
+    const pick = document.querySelector("#pickBtn");
+    const preview = document.querySelector("#filePreview");
+    const nameEl = document.querySelector("#fileName");
+    const sizeEl = document.querySelector("#fileSize");
+    const scanBtn = document.querySelector("#scanBtn");
+    const clearBtn = document.querySelector("#clearBtn");
+    const status = document.querySelector("#uploadStatus");
+    const scanForm = document.querySelector("#scanForm");
+    const analysisPanel = document.querySelector("#analysisProgress");
+    const analysisFileName = document.querySelector("#analysisFileName");
+    const analysisMessage = document.querySelector("#analysisMessage");
+    const analysisProgressLabel = document.querySelector("#analysisProgressLabel");
+    const progressTrack = document.querySelector("#analysisProgressBar");
+    const progressFill = progressTrack?.querySelector(".progress-fill");
+    const analysisSteps = [...document.querySelectorAll("[data-analysis-step]")];
 
-  if (!input) return;
+    if (!input) return;
 
-  let selectedFile = null;
-  let simulatedPrediction = "Benign";
+    let selectedFile = null;
 
-  const updateAnalysisProgress = (completedCount, percent, message) => {
-    analysisSteps.forEach((step, index) => {
-      const complete = index < completedCount;
-      const active = index === completedCount;
-      step.dataset.state = complete ? "complete" : active ? "active" : "queued";
-      const state = step.querySelector(".step-state");
-      if (state) state.textContent = complete ? "Complete" : active ? "In progress" : "Queued";
-      if (active) step.setAttribute("aria-current", "step");
-      else step.removeAttribute("aria-current");
+    const updateAnalysisProgress = (completedCount, percent, message) => {
+        analysisSteps.forEach((step, index) => {
+            const complete = index < completedCount;
+            const active = index === completedCount;
+
+            step.dataset.state = complete ? "complete" : active ? "active" : "queued";
+
+            const state = step.querySelector(".step-state");
+
+            if (state) {
+                state.textContent = complete
+                    ? "Complete"
+                    : active ? "In progress" : "Queued";
+            }
+
+            if (active) step.setAttribute("aria-current", "step");
+            else step.removeAttribute("aria-current");
+        });
+
+        if (progressFill) progressFill.style.width = `${percent}%`;
+
+        progressTrack?.setAttribute("aria-valuenow", String(percent));
+
+        if (analysisProgressLabel) {
+            analysisProgressLabel.textContent =
+                `${String(percent).padStart(2, "0")}%`;
+        }
+
+        if (analysisMessage) analysisMessage.textContent = message;
+    };
+
+    const acceptFile = file => {
+        if (!file) return;
+
+        if (!file.name.toLowerCase().endsWith(".exe")) {
+            status.dataset.state = "error";
+            status.textContent = "Please upload a Windows .exe file.";
+            selectedFile = null;
+            preview.classList.add("hidden");
+            input.value = "";
+            return;
+        }
+
+        selectedFile = file;
+        nameEl.textContent = file.name;
+        sizeEl.textContent = fileSize(file.size);
+        preview.classList.remove("hidden");
+
+        status.dataset.state = "ready";
+        status.textContent = "File ready for static analysis.";
+    };
+
+    pick?.addEventListener("click", () => input.click());
+
+    input.addEventListener("change", event => {
+        acceptFile(event.target.files?.[0]);
     });
-    if (progressFill) progressFill.style.width = `${percent}%`;
-    progressTrack?.setAttribute("aria-valuenow", String(percent));
-    if (analysisProgressLabel) analysisProgressLabel.textContent = `${String(percent).padStart(2, "0")}%`;
-    if (analysisMessage) analysisMessage.textContent = message;
-  };
 
-  const acceptFile = file => {
-    if (!file) return;
-    const ext = file.name.toLowerCase().split(".").pop();
-    if (ext !== "exe") {
-      status.dataset.state = "error";
-      status.textContent = "For this prototype, please upload a Portable Executable (.exe) file.";
-      selectedFile = null;
-      preview.classList.add("hidden");
-      return;
-    }
-    selectedFile = file;
-    // Demo-only deterministic example; replace with API/model response in implementation.
-    simulatedPrediction = "Benign";
-    nameEl.textContent = file.name;
-    sizeEl.textContent = `${fileSize(file.size)} • ${file.type || "application/x-msdownload"}`;
-    preview.classList.remove("hidden");
-    status.dataset.state = "ready";
-    status.textContent = "File ready for static analysis.";
-  };
+    ["dragenter", "dragover"].forEach(eventName => {
+        drop.addEventListener(eventName, event => {
+            event.preventDefault();
+            drop.classList.add("dragover");
+        });
+    });
 
-  pick?.addEventListener("click", ()=>input.click());
-  input.addEventListener("change", e => acceptFile(e.target.files?.[0]));
-  ["dragenter","dragover"].forEach(evt => drop.addEventListener(evt, e => {
-    e.preventDefault(); drop.classList.add("dragover");
-  }));
-  ["dragleave","drop"].forEach(evt => drop.addEventListener(evt, e => {
-    e.preventDefault(); drop.classList.remove("dragover");
-  }));
-  drop.addEventListener("drop", e => acceptFile(e.dataTransfer.files?.[0]));
-  clearBtn?.addEventListener("click", ()=>{
-    selectedFile = null; input.value = ""; preview.classList.add("hidden");
-    delete status.dataset.state;
-    status.textContent = "No file selected.";
-  });
-  scanBtn?.addEventListener("click", ()=>{
-    if (!selectedFile) {
-      status.dataset.state = "error";
-      status.textContent = "Please select an .exe file first.";
-      return;
-    }
-    scanBtn.disabled = true;
-    scanBtn.innerHTML = '<span class="spinner"></span> Analyzing...';
-    scanBtn.setAttribute("aria-busy", "true");
-    status.dataset.state = "busy";
-    status.textContent = "Validating file and extracting static features...";
-    if (analysisFileName) analysisFileName.textContent = selectedFile.name;
-    scanForm?.classList.add("hidden");
-    analysisPanel?.classList.remove("hidden");
-    updateAnalysisProgress(0, 8, "Validating the file package and PE format...");
+    ["dragleave", "drop"].forEach(eventName => {
+        drop.addEventListener(eventName, event => {
+            event.preventDefault();
+            drop.classList.remove("dragover");
+        });
+    });
 
-    [
-      { delay: 360, completed: 1, percent: 34, message: "Preparing static feature groups..." },
-      { delay: 760, completed: 2, percent: 63, message: "Running the prototype classifier..." },
-      { delay: 1180, completed: 3, percent: 87, message: "Preparing the analysis report..." }
-    ].forEach(step => setTimeout(
-      () => updateAnalysisProgress(step.completed, step.percent, step.message),
-      step.delay
-    ));
+    drop.addEventListener("drop", event => {
+        const file = event.dataTransfer.files?.[0];
+        acceptFile(file);
+    });
 
-    setTimeout(()=>{
-      updateAnalysisProgress(analysisSteps.length, 100, "Prototype result ready. Opening the report...");
-      const result = {
-        id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
-        fileName: selectedFile.name,
-        fileSize: selectedFile.size,
-        fileType: "PE Executable",
-        uploadedAt: new Date().toISOString(),
-        algorithm: "LightGBM",
-        prediction: simulatedPrediction,
-        confidence: 0.973,
-        falsePositiveNote: "Prototype result — connect this page to the trained model for real predictions."
-      };
-      const history = loadHistory();
-      history.unshift(result);
-      saveHistory(history.slice(0, 50));
-      window.location.href = `results.html?id=${encodeURIComponent(result.id)}`;
-    }, 1700);
-  });
+    clearBtn?.addEventListener("click", () => {
+        selectedFile = null;
+        input.value = "";
+        preview.classList.add("hidden");
+        delete status.dataset.state;
+        status.textContent = "No file selected.";
+    });
+
+    scanBtn?.addEventListener("click", async () => {
+        if (!selectedFile) {
+            status.dataset.state = "error";
+            status.textContent = "Please select an .exe file first.";
+            return;
+        }
+
+        scanBtn.disabled = true;
+        scanBtn.textContent = "Analyzing...";
+        scanBtn.setAttribute("aria-busy", "true");
+
+        status.dataset.state = "busy";
+        status.textContent = "Uploading file for analysis...";
+
+        if (analysisFileName) {
+            analysisFileName.textContent = selectedFile.name;
+        }
+
+        scanForm.classList.add("hidden");
+        analysisPanel.classList.remove("hidden");
+
+        try {
+            updateAnalysisProgress(
+                0, 8, "Validating the uploaded executable..."
+            );
+
+            const formData = new FormData();
+            formData.append("file", selectedFile);
+
+            updateAnalysisProgress(
+                1, 34, "Extracting EMBER static features..."
+            );
+
+            updateAnalysisProgress(
+                2, 63, "Running the LightGBM classifier..."
+            );
+
+            const response = await fetch("/api/scan", {
+                method: "POST",
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Analysis failed.");
+            }
+
+            updateAnalysisProgress(
+                3, 87, "Preparing the scan report..."
+            );
+
+            const history = loadHistory();
+            history.unshift(result);
+            saveHistory(history.slice(0, 50));
+
+            updateAnalysisProgress(
+                analysisSteps.length,
+                100,
+                "Analysis completed. Opening results..."
+            );
+
+            window.location.href =
+                `results.html?id=${encodeURIComponent(result.id)}`;
+
+        } catch (error) {
+            console.error("Scan error:", error);
+
+            analysisPanel.classList.add("hidden");
+            scanForm.classList.remove("hidden");
+
+            status.dataset.state = "error";
+            status.textContent = error.message || "Unable to analyze file.";
+
+            scanBtn.disabled = false;
+            scanBtn.textContent = "Analyze file";
+            scanBtn.removeAttribute("aria-busy");
+        }
+    });
 }
 
 function setupResults() {
