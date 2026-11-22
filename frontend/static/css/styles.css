@@ -1198,3 +1198,193 @@ td { color: var(--muted); }
   .result-file-heading,
   .result-overall { align-items: flex-start; flex-direction: column; }
 }
+
+
+/* ========================================
+   FRIENDLIER SCAN RESULTS
+======================================== */
+
+.result-section {
+  margin-top: 28px;
+}
+
+.result-section .section-head {
+  margin-bottom: 16px;
+}
+
+.model-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.model-result-card {
+  padding: clamp(20px, 3vw, 30px);
+  text-align: center;
+}
+
+.model-result-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+}
+
+.model-result-heading h3 {
+  margin: 6px 0 0;
+  font-size: 21px;
+  letter-spacing: -.035em;
+}
+
+.model-result-card.model-malware {
+  border-color: rgba(255, 113, 134, .35);
+}
+
+.model-result-card.model-benign {
+  border-color: rgba(105, 240, 195, .25);
+}
+
+/* Circular percentage chart */
+
+.safe-score-section {
+  display: grid;
+  justify-items: center;
+  margin: 28px 0 24px;
+}
+
+.safe-score-chart {
+  display: grid;
+  width: 190px;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--safe-color) var(--safe-value),
+    rgba(255, 113, 134, .22) var(--safe-value) 100%
+  );
+  box-shadow: 0 0 32px rgba(105, 240, 195, .08);
+  transition: background .3s ease;
+}
+
+.model-malware .safe-score-chart {
+  box-shadow: 0 0 32px rgba(242, 202, 114, .08);
+}
+
+.safe-score-inner {
+  display: flex;
+  width: 156px;
+  aspect-ratio: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #101c29;
+}
+
+.safe-score-inner strong {
+  color: var(--safe-color);
+  font-size: 37px;
+  font-weight: 850;
+  letter-spacing: -.06em;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.safe-score-inner span {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.safe-score-caption {
+  margin: 13px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Supporting model information */
+
+.model-result-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  text-align: left;
+}
+
+.model-result-details div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: rgba(5, 12, 19, .3);
+}
+
+.model-result-details span {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.model-result-details strong {
+  overflow-wrap: anywhere;
+  font-size: 14px;
+}
+
+.malicious-value {
+  color: var(--danger);
+}
+
+.probability-track {
+  height: 7px;
+  overflow: hidden;
+  margin-top: 20px;
+  border-radius: 99px;
+  background: rgba(255, 113, 134, .16);
+}
+
+.probability-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f2ca72, var(--danger));
+}
+
+.probability-caption {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: left;
+}
+
+.result-file-panel {
+  margin-top: 24px;
+}
+
+.result-explanation {
+  margin-top: 24px;
+}
+
+@media (max-width: 700px) {
+  .model-comparison-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .safe-score-chart {
+    width: 175px;
+  }
+
+  .safe-score-inner {
+    width: 143px;
+  }
+
+  .result-file-heading,
+  .result-overall {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

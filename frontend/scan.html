@@ -55,23 +55,82 @@
         <p class="disclaimer">For controlled academic testing. Do not treat a benign result as proof that a file is safe.</p>
       </div>
 
+      
       <section id="analysisProgress" class="analysis-progress hidden" aria-labelledby="analysisTitle">
+        <div class="analysis-visual">
+          <div class="scan-orbit" aria-hidden="true">
+            <div class="scan-orbit-ring scan-orbit-ring-one"></div>
+            <div class="scan-orbit-ring scan-orbit-ring-two"></div>
+            <div class="scan-core"><span>SS</span></div>
+            <div class="scan-beam"></div>
+          </div>
+
+          <div class="analysis-channel">
+            <span class="online-dot" aria-hidden="true"></span>
+            Static analysis channel
+          </div>
+
+          <div class="analysis-file-chip">
+            <div class="file-icon">EXE</div>
+            <div class="analysis-file-details">
+              <span class="kicker">Selected sample</span>
+              <strong id="analysisFileName">file.exe</strong>
+            </div>
+          </div>
+        </div>
+
         <div class="analysis-content">
           <div class="eyebrow">Analysis in progress</div>
           <h2 id="analysisTitle">Inspecting file characteristics</h2>
-          <p id="analysisFileName" class="analysis-file-details">Selected file</p>
-          <p id="analysisMessage" class="analysis-message" role="status" aria-live="polite">Validating the file...</p>
-          <div class="progress-meta"><span>Analysis progress</span><strong id="analysisProgressLabel">08%</strong></div>
-          <div id="analysisProgressBar" class="progress-track" role="progressbar" aria-label="Analysis progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8">
+
+          <p id="analysisMessage" class="analysis-message"
+            role="status" aria-live="polite">
+            Checking the file package and PE format...
+          </p>
+
+          <div class="progress-meta">
+            <span>Analysis sequence</span>
+            <strong id="analysisProgressLabel">08%</strong>
+          </div>
+
+          <div id="analysisProgressBar" class="progress-track"
+              role="progressbar"
+              aria-label="Static analysis progress"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="8">
             <span class="progress-fill"></span>
           </div>
+
           <ol class="analysis-steps">
-            <li data-analysis-step data-state="active" aria-current="step"><span class="step-index">01</span><span class="step-label">Validate file</span><span class="step-state">In progress</span></li>
-            <li data-analysis-step data-state="queued"><span class="step-index">02</span><span class="step-label">Extract features</span><span class="step-state">Queued</span></li>
-            <li data-analysis-step data-state="queued"><span class="step-index">03</span><span class="step-label">Run Random Forest and LightGBM</span><span class="step-state">Queued</span></li>
-            <li data-analysis-step data-state="queued"><span class="step-index">04</span><span class="step-label">Prepare result</span><span class="step-state">Queued</span></li>
+            <li data-analysis-step data-state="active" aria-current="step">
+              <span class="step-index">01</span>
+              <span class="step-label">Validate file</span>
+              <span class="step-state">In progress</span>
+            </li>
+
+            <li data-analysis-step data-state="queued">
+              <span class="step-index">02</span>
+              <span class="step-label">Extract EMBER features</span>
+              <span class="step-state">Queued</span>
+            </li>
+
+            <li data-analysis-step data-state="queued">
+              <span class="step-index">03</span>
+              <span class="step-label">Run Random Forest and LightGBM</span>
+              <span class="step-state">Queued</span>
+            </li>
+
+            <li data-analysis-step data-state="queued">
+              <span class="step-index">04</span>
+              <span class="step-label">Prepare results</span>
+              <span class="step-state">Queued</span>
+            </li>
           </ol>
-          <p class="analysis-footnote">The uploaded executable is analyzed without being executed.</p>
+
+          <p class="analysis-footnote">
+            The uploaded executable is analyzed without being executed.
+          </p>
         </div>
       </section>
     </section>

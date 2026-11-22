@@ -35,9 +35,22 @@ function predictionBadge(prediction) {
   return `<span class="badge ${className}">${esc(prediction)}</span>`;
 }
 
-function modelCard(title, result, thresholdLabel) {
+
+function modelCard(title, result) {
   const isMalware = result.prediction === "Malware";
+  const safeProbability = Math.max(
+    0,
+    Math.min(100, (1 - result.maliciousProbability) * 100)
+  );
+  const maliciousProbability = Math.max(
+    0,
+    Math.min(100, result.maliciousProbability * 100)
+  );
+
+  const safeColor = isMalware ? "var(--warning)" : "var(--success)";
   const statusClass = isMalware ? "model-malware" : "model-benign";
+  const safeText = safeProbability.toFixed(2);
+
   return `
     <article class="panel model-result-card ${statusClass}">
       <div class="model-result-heading">
@@ -47,22 +60,59 @@ function modelCard(title, result, thresholdLabel) {
         </div>
         ${predictionBadge(result.prediction)}
       </div>
-      <div class="model-probability">
-        <span class="model-probability-value">${(result.maliciousProbability * 100).toFixed(2)}%</span>
-        <span class="muted">Malicious probability</span>
+
+      <div class="safe-score-section">
+        <div
+          class="safe-score-chart"
+          role="img"
+          aria-label="Estimated non-malicious probability: ${safeText}%"
+          style="--safe-value: ${safeProbability}%; --safe-color: ${safeColor};"
+        >
+          <div class="safe-score-inner">
+            <strong>${safeText}%</strong>
+            <span>Estimated safe</span>
+          </div>
+        </div>
+
+        <p class="safe-score-caption">
+          Estimated non-malicious probability
+        </p>
       </div>
+
       <div class="model-result-details">
-        <div><span>Prediction confidence</span><strong>${(result.confidence * 100).toFixed(2)}%</strong></div>
-        <div><span>Decision threshold</span><strong>${(result.threshold * 100).toFixed(0)}%</strong></div>
+        <div>
+          <span>Malicious probability</span>
+          <strong class="malicious-value">${maliciousProbability.toFixed(2)}%</strong>
+        </div>
+        <div>
+          <span>Prediction confidence</span>
+          <strong>${(result.confidence * 100).toFixed(2)}%</strong>
+        </div>
+        <div>
+          <span>Decision threshold</span>
+          <strong>${(result.threshold * 100).toFixed(0)}%</strong>
+        </div>
+        <div>
+          <span>Classification</span>
+          <strong>${esc(result.prediction)}</strong>
+        </div>
       </div>
+
       <div class="probability-track" role="progressbar"
            aria-label="${esc(title)} malicious probability"
-           aria-valuemin="0" aria-valuemax="100"
-           aria-valuenow="${(result.maliciousProbability * 100).toFixed(2)}">
-        <span style="width:${Math.max(0, Math.min(100, result.maliciousProbability * 100))}%"></span>
+           aria-valuemin="0"
+           aria-valuemax="100"
+           aria-valuenow="${maliciousProbability.toFixed(2)}">
+        <span style="width: ${maliciousProbability}%"></span>
       </div>
-    </article>`;
+      <p class="probability-caption">
+        ${maliciousProbability.toFixed(2)}% estimated malicious probability
+      </p>
+    </article>
+  `;
 }
+
+
 
 function setupScanner() {
   const input = document.querySelector("#fileInput");
@@ -77,33 +127,67 @@ function setupScanner() {
   const clearBtn = document.querySelector("#clearBtn");
   const status = document.querySelector("#uploadStatus");
   const scanForm = document.querySelector("#scanForm");
+
   const analysisPanel = document.querySelector("#analysisProgress");
   const analysisFileName = document.querySelector("#analysisFileName");
   const analysisMessage = document.querySelector("#analysisMessage");
-  const progressLabel = document.querySelector("#analysisProgressLabel");
+  const analysisProgressLabel = document.querySelector("#analysisProgressLabel");
   const progressTrack = document.querySelector("#analysisProgressBar");
   const progressFill = progressTrack?.querySelector(".progress-fill");
-  const steps = [...document.querySelectorAll("[data-analysis-step]")];
+  const analysisSteps = [
+    ...document.querySelectorAll("[data-analysis-step]")
+  ];
+
   let selectedFile = null;
 
-  function setProgress(completedCount, percent, message) {
-    steps.forEach((step, index) => {
+  const updateAnalysisProgress = (completedCount, percent, message) => {
+    analysisSteps.forEach((step, index) => {
       const complete = index < completedCount;
       const active = index === completedCount;
-      step.dataset.state = complete ? "complete" : active ? "active" : "queued";
+
+      step.dataset.state = complete
+        ? "complete"
+        : active ? "active" : "queued";
+
       const state = step.querySelector(".step-state");
-      if (state) state.textContent = complete ? "Complete" : active ? "In progress" : "Queued";
+
+      if (state) {
+        state.textContent = complete
+          ? "Complete"
+          : active ? "In progress" : "Queued";
+      }
+
       if (active) step.setAttribute("aria-current", "step");
       else step.removeAttribute("aria-current");
     });
-    if (progressFill) progressFill.style.width = `${percent}%`;
-    progressTrack?.setAttribute("aria-valuenow", String(percent));
-    if (progressLabel) progressLabel.textContent = `${String(percent).padStart(2, "0")}%`;
-    if (analysisMessage) analysisMessage.textContent = message;
-  }
 
-  function acceptFile(file) {
+    if (progressFill) {
+      progressFill.style.width = `${percent}%`;
+    }
+
+    progressTrack?.setAttribute("aria-valuenow", String(percent));
+
+    if (analysisProgressLabel) {
+      analysisProgressLabel.textContent =
+        `${String(percent).padStart(2, "0")}%`;
+    }
+
+    if (analysisMessage) {
+      analysisMessage.textContent = message;
+    }
+  };
+
+  const showProgress = async (completed, percent, message) => {
+    updateAnalysisProgress(completed, percent, message);
+
+    await new Promise(resolve =>
+      requestAnimationFrame(() => resolve())
+    );
+  };
+
+  const acceptFile = file => {
     if (!file) return;
+
     if (!file.name.toLowerCase().endsWith(".exe")) {
       status.dataset.state = "error";
       status.textContent = "Please select a Windows .exe file.";
@@ -112,39 +196,55 @@ function setupScanner() {
       input.value = "";
       return;
     }
-    if (file.size > 100 * 1024 * 1024) {
+
+    if (file.size > 300 * 1024 * 1024) {
       status.dataset.state = "error";
-      status.textContent = "File exceeds the 100 MB upload limit.";
+      status.textContent = "File exceeds the 300 MB upload limit.";
       selectedFile = null;
       preview.classList.add("hidden");
       input.value = "";
       return;
     }
+
     selectedFile = file;
     nameEl.textContent = file.name;
     sizeEl.textContent = fileSize(file.size);
     preview.classList.remove("hidden");
+
     status.dataset.state = "ready";
-    status.textContent = "File ready. Both models will analyse the same static features.";
-  }
+    status.textContent =
+      "File ready. Both models will analyse the same static features.";
+  };
 
   pick?.addEventListener("click", () => input.click());
-  input.addEventListener("change", event => acceptFile(event.target.files?.[0]));
 
-  ["dragenter", "dragover"].forEach(type => drop?.addEventListener(type, event => {
-    event.preventDefault();
-    drop.classList.add("dragover");
-  }));
-  ["dragleave", "drop"].forEach(type => drop?.addEventListener(type, event => {
-    event.preventDefault();
-    drop.classList.remove("dragover");
-  }));
-  drop?.addEventListener("drop", event => acceptFile(event.dataTransfer.files?.[0]));
+  input.addEventListener("change", event => {
+    acceptFile(event.target.files?.[0]);
+  });
+
+  ["dragenter", "dragover"].forEach(type => {
+    drop?.addEventListener(type, event => {
+      event.preventDefault();
+      drop.classList.add("dragover");
+    });
+  });
+
+  ["dragleave", "drop"].forEach(type => {
+    drop?.addEventListener(type, event => {
+      event.preventDefault();
+      drop.classList.remove("dragover");
+    });
+  });
+
+  drop?.addEventListener("drop", event => {
+    acceptFile(event.dataTransfer.files?.[0]);
+  });
 
   clearBtn?.addEventListener("click", () => {
     selectedFile = null;
     input.value = "";
     preview.classList.add("hidden");
+
     delete status.dataset.state;
     status.textContent = "No file selected.";
   });
@@ -156,48 +256,82 @@ function setupScanner() {
       return;
     }
 
-    const fileBeingScanned = selectedFile;
     scanBtn.disabled = true;
     scanBtn.textContent = "Analyzing...";
     scanBtn.setAttribute("aria-busy", "true");
+
     status.dataset.state = "busy";
-    status.textContent = "Sending file for static analysis...";
-    if (analysisFileName) analysisFileName.textContent = fileBeingScanned.name;
+    status.textContent = "Uploading file for analysis...";
+
+    if (analysisFileName) {
+      analysisFileName.textContent = selectedFile.name;
+    }
+
     scanForm.classList.add("hidden");
     analysisPanel.classList.remove("hidden");
 
     try {
-      setProgress(0, 10, "Validating the uploaded executable...");
+      await showProgress(
+        0, 8, "Validating the uploaded executable..."
+      );
+
       const formData = new FormData();
-      formData.append("file", fileBeingScanned);
+      formData.append("file", selectedFile);
 
-      setProgress(1, 30, "Extracting the 2,381 EMBER v2 static features...");
-      const response = await fetch("/api/scan", { method: "POST", body: formData });
+      await showProgress(
+        1, 34, "Extracting EMBER static features..."
+      );
+
+      await showProgress(
+        2, 63, "Running Random Forest and LightGBM classifiers..."
+      );
+
+      const response = await fetch("/api/scan", {
+        method: "POST",
+        body: formData
+      });
+
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Analysis failed.");
 
-      setProgress(2, 75, "Running Random Forest and LightGBM predictions...");
-      if (!result.models?.randomForest || !result.models?.lightGBM) {
-        throw new Error("The server returned incomplete model results.");
+      if (!response.ok) {
+        throw new Error(result.error || "Analysis failed.");
       }
+
+      await showProgress(
+        3, 87, "Comparing model predictions and preparing the report..."
+      );
 
       const history = loadHistory();
       history.unshift(result);
       saveHistory(history.slice(0, 50));
-      setProgress(steps.length, 100, "Both model predictions are ready. Opening results...");
-      window.location.href = `results.html?id=${encodeURIComponent(result.id)}`;
+
+      await showProgress(
+        analysisSteps.length,
+        100,
+        "Analysis completed. Opening results..."
+      );
+
+      window.location.href =
+        `results.html?id=${encodeURIComponent(result.id)}`;
+
     } catch (error) {
       console.error("Scan error:", error);
+
       analysisPanel.classList.add("hidden");
       scanForm.classList.remove("hidden");
+
       status.dataset.state = "error";
-      status.textContent = error.message || "Unable to analyse file.";
+      status.textContent =
+        error.message || "Unable to analyze file.";
+
       scanBtn.disabled = false;
-      scanBtn.textContent = "Analyze with both models";
+      scanBtn.textContent = "Analyze file";
       scanBtn.removeAttribute("aria-busy");
     }
   });
 }
+
+
 
 function setupResults() {
   const root = document.querySelector("#resultRoot");
@@ -219,11 +353,12 @@ function setupResults() {
   }
 
   const models = item.models;
+
   if (!models?.randomForest || !models?.lightGBM) {
     root.innerHTML = `
       <div class="panel scan-card">
         <h2>Older scan record</h2>
-        <p>This result was saved by an earlier single-model version of StaticShield. Scan the file again to compare both models.</p>
+        <p>This record was saved by an earlier version of StaticShield. Scan the file again to compare both models.</p>
         <a class="btn btn-primary" href="scan.html">Run a new scan</a>
       </div>`;
     return;
@@ -233,6 +368,7 @@ function setupResults() {
   const statusText = agreement
     ? `Both models agree: ${item.overallPrediction}.`
     : "The models produced different classifications. Review both predictions below.";
+
   const statusClass = agreement
     ? (item.overallPrediction === "Malware" ? "badge-danger" : "badge-success")
     : "badge-neutral";
@@ -243,38 +379,80 @@ function setupResults() {
         <div>
           <div class="kicker">Analysed executable</div>
           <h2>${esc(item.fileName)}</h2>
-          <p class="muted">${fileSize(item.fileSize)} · ${esc(item.fileType)} · ${new Date(item.uploadedAt).toLocaleString()}</p>
+          <p class="muted">
+            ${fileSize(item.fileSize)} · ${esc(item.fileType)} ·
+            ${new Date(item.uploadedAt).toLocaleString()}
+          </p>
         </div>
         <span class="badge badge-neutral">Static analysis</span>
       </div>
+
       <div class="result-overall">
         <div>
           <div class="kicker">Model comparison</div>
           <strong>${esc(statusText)}</strong>
         </div>
-        <span class="badge ${statusClass}">${agreement ? esc(item.overallPrediction.toUpperCase()) : "DISAGREEMENT"}</span>
+        <span class="badge ${statusClass}">
+          ${agreement ? esc(item.overallPrediction.toUpperCase()) : "DISAGREEMENT"}
+        </span>
       </div>
     </section>
 
-    <section class="model-comparison-grid" aria-label="Independent model predictions">
-      ${modelCard("Random Forest", models.randomForest)}
-      ${modelCard("LightGBM", models.lightGBM)}
+    <section class="result-section">
+      <div class="section-head">
+        <div>
+          <h2>File safety assessment</h2>
+          <p>Estimated non-malicious probability from each machine learning model.</p>
+        </div>
+      </div>
+
+      <div class="model-comparison-grid">
+        ${modelCard("Random Forest", models.randomForest)}
+        ${modelCard("LightGBM", models.lightGBM)}
+      </div>
     </section>
 
     <section class="panel scan-card result-explanation">
       <div class="section-head">
-        <div><h2>Understanding the results</h2><p>Each classifier makes its own prediction using the same extracted EMBER features.</p></div>
+        <div>
+          <h2>Understanding the results</h2>
+          <p>Both classifiers analyse the same extracted EMBER v2 static features.</p>
+        </div>
       </div>
+
       <div class="result-info">
-        <div class="stat"><label>Feature set</label><strong>EMBER v2 · 2,381 features</strong></div>
-        <div class="stat"><label>Random Forest threshold</label><strong>50%</strong></div>
-        <div class="stat"><label>LightGBM threshold</label><strong>52%</strong></div>
-        <div class="stat"><label>Models' agreement</label><strong>${agreement ? "Yes" : "No"}</strong></div>
+        <div class="stat">
+          <label>Feature set</label>
+          <strong>EMBER v2 · 2,381 features</strong>
+        </div>
+        <div class="stat">
+          <label>Random Forest threshold</label>
+          <strong>50%</strong>
+        </div>
+        <div class="stat">
+          <label>LightGBM threshold</label>
+          <strong>52%</strong>
+        </div>
+        <div class="stat">
+          <label>Models' agreement</label>
+          <strong>${agreement ? "Yes" : "No"}</strong>
+        </div>
       </div>
-      <p class="notice">${esc(item.note || "A benign classification does not guarantee that a file is safe.")}</p>
-      <p class="analysis-footnote">Malicious probability is the model's estimated probability for the malware class. Prediction confidence refers to the probability of the class selected by that model. These values are not a guarantee of file safety.</p>
-    </section>`;
+
+      <p class="notice">
+        ${esc(item.note || "A benign classification does not guarantee that a file is safe.")}
+      </p>
+
+      <p class="analysis-footnote">
+        The estimated safe percentage is calculated as 100% minus the model's
+        malicious probability. It is not a verified safety score or a guarantee
+        that the executable is harmless. Prediction confidence describes the
+        probability of the class selected by that model.
+      </p>
+    </section>
+  `;
 }
+
 
 function setupHistory() {
   const body = document.querySelector("#historyBody");
