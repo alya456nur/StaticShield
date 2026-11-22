@@ -30,7 +30,7 @@
       <div>
         <div class="eyebrow">Machine-learning-based static malware detection</div>
         <h1>Analyze a Windows executable before you trust it.</h1>
-        <p class="lead">Upload a Windows PE (.exe) file to examine its static characteristics and classify it as <strong>Malware</strong> or <strong>Benign</strong> using a trained machine-learning model.</p>
+        <p class="lead">Upload a Windows PE (.exe) file to examine its static characteristics and classify it independently with two trained machine-learning models: Random Forest and LightGBM.</p>
         <div class="hero-points">
           <span class="pill">Static Analysis</span>
           <span class="pill">EMBER v2</span>
@@ -44,7 +44,7 @@
         <h3>Static analysis only</h3>
         <p>The uploaded executable is inspected to extract PE features. The file is not launched or executed by the detection process.</p>
         <div class="model-strip">
-          <div><div class="kicker">Primary classifier</div><div class="model-tag">LightGBM</div></div>
+          <div><div class="kicker">Detection models</div><div class="model-tag">Random Forest + LightGBM</div></div>
           <div><div class="kicker">Feature set</div><div class="model-tag">2,381 features</div></div>
         </div>
       </div>

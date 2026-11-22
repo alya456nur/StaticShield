@@ -50,7 +50,7 @@
 
         <div class="controls">
           <div id="uploadStatus" class="status" role="status" aria-live="polite">No file selected.</div>
-          <button id="scanBtn" class="btn btn-primary" type="button">Analyze file</button>
+          <button id="scanBtn" class="btn btn-primary" type="button">Analyze with both models</button>
         </div>
         <p class="disclaimer">For controlled academic testing. Do not treat a benign result as proof that a file is safe.</p>
       </div>
@@ -68,7 +68,7 @@
           <ol class="analysis-steps">
             <li data-analysis-step data-state="active" aria-current="step"><span class="step-index">01</span><span class="step-label">Validate file</span><span class="step-state">In progress</span></li>
             <li data-analysis-step data-state="queued"><span class="step-index">02</span><span class="step-label">Extract features</span><span class="step-state">Queued</span></li>
-            <li data-analysis-step data-state="queued"><span class="step-index">03</span><span class="step-label">Classify file</span><span class="step-state">Queued</span></li>
+            <li data-analysis-step data-state="queued"><span class="step-index">03</span><span class="step-label">Run Random Forest and LightGBM</span><span class="step-state">Queued</span></li>
             <li data-analysis-step data-state="queued"><span class="step-index">04</span><span class="step-label">Prepare result</span><span class="step-state">Queued</span></li>
           </ol>
           <p class="analysis-footnote">The uploaded executable is analyzed without being executed.</p>

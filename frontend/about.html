@@ -33,7 +33,7 @@
     <div class="info-grid">
       <div class="panel info-card"><div class="kicker">Research focus</div><h3>Static malware detection</h3><p>The system examines file characteristics without executing the uploaded executable.</p></div>
       <div class="panel info-card"><div class="kicker">Dataset</div><h3>EMBER 2018 v2</h3><p>The models were developed using labelled PE samples and 2,381-dimensional static feature vectors.</p></div>
-      <div class="panel info-card"><div class="kicker">Models</div><h3>LightGBM & Random Forest</h3><p>Both classifiers were trained and evaluated. LightGBM is used as the primary model in the current prototype.</p></div>
+      <div class="panel info-card"><div class="kicker">Models</div><h3>LightGBM & Random Forest</h3><p>Both classifiers were trained and evaluated. Both models analyse each uploaded file independently using the same extracted feature vector.</p></div>
     </div>
 
     <section id="methodology" class="panel scan-card" style="margin-top:18px">
@@ -45,7 +45,7 @@
         <div class="small-card"><h4>4. Model Development</h4><p>Train LightGBM and Random Forest classifiers.</p></div>
         <div class="small-card"><h4>5. Model Evaluation</h4><p>Evaluate accuracy, precision, recall, F1-score, ROC-AUC and false positive rate.</p></div>
         <div class="small-card"><h4>6. Testing & Validation</h4><p>Test feature extraction, model prediction and web application functionality.</p></div>
-        <div class="small-card"><h4>7. Deployment</h4><p>Integrate the selected classifier into the local web-based prototype.</p></div>
+        <div class="small-card"><h4>7. Deployment</h4><p>Integrate both classifiers into the local web-based prototype.</p></div>
       </div>
     </section>
 
@@ -54,7 +54,7 @@
       <div class="result-info">
         <div class="stat"><label>Prediction</label><strong>Malware / Benign</strong></div>
         <div class="stat"><label>Malicious probability</label><strong>Model probability</strong></div>
-        <div class="stat"><label>Algorithm</label><strong>LightGBM</strong></div>
+        <div class="stat"><label>Algorithms</label><strong>Random Forest & LightGBM</strong></div>
         <div class="stat"><label>File information</label><strong>Name and size</strong></div>
         <div class="stat"><label>Scan date</label><strong>Timestamp</strong></div>
         <div class="stat"><label>Analysis type</label><strong>Static analysis</strong></div>
