@@ -1,21 +1,78 @@
 
-# Processed datasets
+# ==========================================
+# PROCESSED DATASETS
+# ==========================================
 **/data/processed/*.npy
+**/data/processed/*.npz
 
-# Raw datasets
+# RAW DATASETS
 **/data/raw/
+ember/
+ember-master/
 
-# Trained models
+# ==========================================
+# TRAINED MODELS
+# ==========================================
 models/*.joblib
 models/*.pkl
+models/*.model
 
-# Python cache
+# ==========================================
+# PYTHON
+# ==========================================
 __pycache__/
 *.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
 
-# Virtual environments
+# VIRTUAL ENVIRONMENTS
 .venv/
 venv/
+env/
 
-# Jupyter checkpoints
+# JUPYTER
 .ipynb_checkpoints/
+
+# ==========================================
+# LOCAL UPLOADS & TEMPORARY FILES
+# ==========================================
+uploads/
+temp/
+tmp/
+*.log
+
+# ==========================================
+# ENVIRONMENT VARIABLES & SECRETS
+# ==========================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.jks
+service-account*.json
+firebase-adminsdk*.json
+
+# ==========================================
+# NODE.JS
+# ==========================================
+node_modules/
+
+# ==========================================
+# FIREBASE
+# ==========================================
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+.firebaserc
+firebase.json
+
+# ==========================================
+# IDE & OS
+# ==========================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
