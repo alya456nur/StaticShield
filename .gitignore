@@ -60,6 +60,14 @@ firebase-adminsdk*.json
 node_modules/
 
 # ==========================================
+# FIREBASE
+# ==========================================
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# ==========================================
 # IDE & OS
 # ==========================================
 .vscode/
