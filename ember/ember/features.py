@@ -534,12 +534,13 @@ class PEFeatureExtractor(object):
         self.dim = sum([fe.dim for fe in self.features])
 
     
+    
     def raw_features(self, bytez):
         try:
-            lief_binary = lief.PE.parse(list(bytez))
+            # Pass bytes directly to LIEF instead of creating a large Python list.
+            lief_binary = lief.PE.parse(bytez)
 
-            # LIEF 1.0 returns an error enum instead of
-            # using the older exception attributes.
+            # LIEF 1.0 may return an error enum instead of raising an exception.
             if isinstance(lief_binary, lief.lief_errors):
                 print("LIEF parsing error:", lief_binary)
                 lief_binary = None
@@ -556,6 +557,7 @@ class PEFeatureExtractor(object):
         })
 
         return features
+
 
 
     def process_raw_features(self, raw_obj):

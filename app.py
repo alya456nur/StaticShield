@@ -1,11 +1,14 @@
 
 from pathlib import Path
 from datetime import datetime, timezone
+import os
 import uuid
 
 import joblib
 import numpy as np
+import firebase_admin
 
+from firebase_admin import auth, storage
 from flask import Flask, jsonify, request, send_from_directory
 from werkzeug.utils import secure_filename
 
@@ -25,7 +28,25 @@ LIGHTGBM_PATH = MODEL_DIR / "lightgbm.joblib"
 
 RANDOM_FOREST_THRESHOLD = 0.50
 LIGHTGBM_THRESHOLD = 0.52
-MAX_FILE_SIZE = 300 * 1024 * 1024  # 300 MB
+
+MAX_FILE_SIZE = 300 * 1024 * 1024
+
+# Set this environment variable to your exact Firebase Storage bucket name.
+FIREBASE_STORAGE_BUCKET = os.environ.get("FIREBASE_STORAGE_BUCKET")
+
+if not FIREBASE_STORAGE_BUCKET:
+    raise RuntimeError("FIREBASE_STORAGE_BUCKET environment variable is missing.")
+
+# Cloud Run provides its service account credentials automatically.
+if not firebase_admin._apps:
+    firebase_admin.initialize_app(
+        options={"storageBucket": FIREBASE_STORAGE_BUCKET}
+    )
+
+
+# --------------------------------------------------
+# FLASK APPLICATION
+# --------------------------------------------------
 
 app = Flask(
     __name__,
@@ -33,18 +54,22 @@ app = Flask(
     static_url_path="/static"
 )
 
-app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_SIZE
+# The API receives only small JSON requests, not the executable itself.
+app.config["MAX_CONTENT_LENGTH"] = 1024 * 1024
 
-# Load the trained model once when Flask starts.
+
+# --------------------------------------------------
+# LOAD MODELS
+# --------------------------------------------------
+
 print("Loading Random Forest model...")
 random_forest_model = joblib.load(RANDOM_FOREST_PATH)
 print("Random Forest loaded.")
 
 print("Loading LightGBM model...")
 lightgbm_model = joblib.load(LIGHTGBM_PATH)
-print("LightGBM model loaded successfully.")
+print("LightGBM loaded successfully.")
 
-# Initialize EMBER feature extractor.
 print("Initializing EMBER feature extractor...")
 extractor = PEFeatureExtractor(
     feature_version=2,
@@ -79,19 +104,53 @@ def frontend_pages(page):
     return send_from_directory(FRONTEND_DIR, page)
 
 
+# --------------------------------------------------
+# FIREBASE AUTHENTICATION
+# --------------------------------------------------
+
+def get_authenticated_user():
+    """Verify the Firebase ID token supplied by the browser."""
+
+    authorization = request.headers.get("Authorization", "")
+
+    if not authorization.startswith("Bearer "):
+        raise ValueError("Missing Firebase authentication token.")
+
+    id_token = authorization.split(" ", 1)[1].strip()
+
+    if not id_token:
+        raise ValueError("Missing Firebase authentication token.")
+
+    return auth.verify_id_token(id_token)
+
+
+# --------------------------------------------------
+# MODEL CLASSIFICATION
+# --------------------------------------------------
+
 def classify(model, features, threshold):
-    """Return a model's independent binary prediction and probability."""
     probabilities = model.predict_proba(features)[0]
     classes = list(model.classes_)
+
     if 1 not in classes:
-        raise ValueError("The loaded model does not contain malicious class label 1.")
+        raise ValueError(
+            "The loaded model does not contain malicious class label 1."
+        )
 
     malicious_probability = float(probabilities[classes.index(1)])
-    prediction = "Malware" if malicious_probability >= threshold else "Benign"
+
+    prediction = (
+        "Malware"
+        if malicious_probability >= threshold
+        else "Benign"
+    )
+
     confidence = (
-        malicious_probability if prediction == "Malware"
+        malicious_probability
+        if prediction == "Malware"
         else 1.0 - malicious_probability
     )
+
     return {
         "prediction": prediction,
         "maliciousProbability": malicious_probability,
@@ -99,55 +158,146 @@ def classify(model, features, threshold):
         "threshold": threshold
     }
 
+
 # --------------------------------------------------
 # MALWARE SCANNING API
 # --------------------------------------------------
 
 @app.route("/api/scan", methods=["POST"])
 def scan_file():
-    uploaded_file = request.files.get("file")
-    if uploaded_file is None:
-        return jsonify({"error": "No file was uploaded."}), 400
 
-    filename = secure_filename(uploaded_file.filename or "")
-    if not filename:
-        return jsonify({"error": "Invalid filename."}), 400
-    if not filename.lower().endswith(".exe"):
-        return jsonify({"error": "Only Windows PE (.exe) files are accepted."}), 400
+    # Authenticate the Firebase user.
+    try:
+        user = get_authenticated_user()
+    except Exception:
+        return jsonify({
+            "error": "Authentication failed. Please refresh and try again."
+        }), 401
+
+    uid = user["uid"]
+
+    data = request.get_json(silent=True) or {}
+
+    storage_path = data.get("storagePath", "")
+    original_filename = secure_filename(data.get("fileName", ""))
+
+    if not storage_path or not original_filename:
+        return jsonify({
+            "error": "Missing uploaded file information."
+        }), 400
+
+    if not original_filename.lower().endswith(".exe"):
+        return jsonify({
+            "error": "Only Windows PE (.exe) files are accepted."
+        }), 400
+
+    # Only accept incoming/<authenticated-user-id>/<filename>.
+    path_parts = storage_path.split("/")
+
+    if (
+        len(path_parts) != 3
+        or path_parts[0] != "incoming"
+        or path_parts[1] != uid
+        or not path_parts[2]
+        or path_parts[2] in {".", ".."}
+    ):
+        return jsonify({
+            "error": "Invalid or unauthorized Storage object path."
+        }), 403
+
+    bucket = storage.bucket()
+    blob = bucket.blob(storage_path)
+
+    bytez = None
 
     try:
-        # Process the upload in memory; it is not written to disk.
-        bytez = uploaded_file.read(MAX_FILE_SIZE + 1)
-        if not bytez:
-            return jsonify({"error": "The uploaded file is empty."}), 400
-        if len(bytez) > MAX_FILE_SIZE:
-            return jsonify({"error": "File exceeds the 300 MB upload limit."}), 413
-        if not bytez.startswith(b"MZ"):
-            return jsonify({"error": "Invalid Windows executable signature."}), 400
+        # Confirm the uploaded object exists.
+        if not blob.exists():
+            return jsonify({
+                "error": "Uploaded file was not found. Please upload it again."
+            }), 404
 
-        print(f"Extracting EMBER v2 features: {filename}")
-        feature_vector = np.asarray(extractor.feature_vector(bytez), dtype=np.float32)
+        blob.reload()
+
+        file_size = blob.size
+
+        if file_size is None or file_size <= 0:
+            return jsonify({
+                "error": "The uploaded file is empty."
+            }), 400
+
+        if file_size > MAX_FILE_SIZE:
+            return jsonify({
+                "error": "File exceeds the 300 MB upload limit."
+            }), 413
+
+        print(f"Downloading temporary upload: {original_filename}")
+
+        # Download privately using the Cloud Run service account.
+        bytez = blob.download_as_bytes()
+
+        if not bytez:
+            return jsonify({
+                "error": "The uploaded file is empty."
+            }), 400
+
+        if len(bytez) > MAX_FILE_SIZE:
+            return jsonify({
+                "error": "File exceeds the 300 MB upload limit."
+            }), 413
+
+        if not bytez.startswith(b"MZ"):
+            return jsonify({
+                "error": "Invalid Windows executable signature."
+            }), 400
+
+        # Extract EMBER v2 features.
+        print(f"Extracting EMBER v2 features: {original_filename}")
+
+        feature_vector = np.asarray(
+            extractor.feature_vector(bytez),
+            dtype=np.float32
+        )
+
         if feature_vector.shape != (2381,):
             raise ValueError(
-                f"Expected 2,381 EMBER features, received {feature_vector.shape}."
+                f"Expected 2,381 EMBER features, received "
+                f"{feature_vector.shape}."
             )
+
         if not np.isfinite(feature_vector).all():
-            raise ValueError("Extracted features contain invalid numeric values.")
+            raise ValueError(
+                "Extracted features contain invalid numeric values."
+            )
 
         X = feature_vector.reshape(1, -1)
 
-        # Both models receive exactly the same extracted feature vector.
-        rf_result = classify(random_forest_model, X, RANDOM_FOREST_THRESHOLD)
-        lgbm_result = classify(lightgbm_model, X, LIGHTGBM_THRESHOLD)
+        # Run both models independently.
+        rf_result = classify(
+            random_forest_model,
+            X,
+            RANDOM_FOREST_THRESHOLD
+        )
 
-        agreement = rf_result["prediction"] == lgbm_result["prediction"]
+        lgbm_result = classify(
+            lightgbm_model,
+            X,
+            LIGHTGBM_THRESHOLD
+        )
+
+        agreement = (
+            rf_result["prediction"] == lgbm_result["prediction"]
+        )
+
         overall_prediction = (
-            rf_result["prediction"] if agreement else "Disagreement"
+            rf_result["prediction"]
+            if agreement
+            else "Disagreement"
         )
 
         result = {
             "id": str(uuid.uuid4()),
-            "fileName": filename,
+            "fileName": original_filename,
             "fileSize": len(bytez),
             "fileType": "Windows PE Executable",
             "uploadedAt": datetime.now(timezone.utc).isoformat(),
@@ -161,9 +311,9 @@ def scan_file():
             "modelsAgree": agreement,
             "overallPrediction": overall_prediction,
             "note": (
-                "The two models are reported independently; their probabilities "
-                "are not averaged. A benign classification does not guarantee "
-                "that a file is safe."
+                "The two models are reported independently; their "
+                "probabilities are not averaged. A benign classification "
+                "does not guarantee that a file is safe."
             )
         }
 
@@ -171,20 +321,37 @@ def scan_file():
             f"Random Forest: {rf_result['prediction']} "
             f"({rf_result['maliciousProbability']:.4f})"
         )
+
         print(
             f"LightGBM: {lgbm_result['prediction']} "
             f"({lgbm_result['maliciousProbability']:.4f})"
         )
+
         return jsonify(result), 200
 
     except Exception:
         app.logger.exception("File scanning failed.")
+
         return jsonify({
             "error": (
-                "File analysis failed. Check that both model files and the "
-                "EMBER feature extractor are correctly installed."
+                "File analysis failed. Check the backend logs "
+                "for more information."
             )
         }), 500
+
+    finally:
+        # Release the downloaded file bytes.
+        bytez = None
+
+        # Delete the temporary upload, including after analysis errors.
+        try:
+            blob.delete()
+            print(f"Temporary upload deleted: {storage_path}")
+        except Exception:
+            app.logger.exception(
+                "Could not delete temporary Storage object: %s",
+                storage_path
+            )
 
 
 # --------------------------------------------------
@@ -194,20 +361,22 @@ def scan_file():
 @app.errorhandler(413)
 def file_too_large(error):
     return jsonify({
-        "error": "File exceeds the 300 MB upload limit."
+        "error": "Request exceeds the allowed size."
     }), 413
 
 
 # --------------------------------------------------
-# RUN APPLICATION
+# LOCAL DEVELOPMENT
 # --------------------------------------------------
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+
     print("\nStaticShield backend starting...")
-    print("Open http://127.0.0.1:5000")
+    print(f"Listening on port {port}")
 
     app.run(
-        host="127.0.0.1",
-        port=5000,
+        host="0.0.0.0",
+        port=port,
         debug=False
     )

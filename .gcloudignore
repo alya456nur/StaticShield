@@ -1,0 +1,14 @@
+
+.gcloudignore
+.git/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.env
+.env.*
+ML/data/
+ML/results/
+uploads/
+temp/
+node_modules/

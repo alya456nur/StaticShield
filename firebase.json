@@ -5,6 +5,15 @@
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "run": {
+          "serviceId": "staticshield-api",
+          "region": "asia-southeast1"
+        }
+      }
     ]
   }
 }

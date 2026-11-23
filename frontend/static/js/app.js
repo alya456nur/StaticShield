@@ -249,6 +249,7 @@ function setupScanner() {
     status.textContent = "No file selected.";
   });
 
+  
   scanBtn?.addEventListener("click", async () => {
     if (!selectedFile) {
       status.dataset.state = "error";
@@ -257,11 +258,11 @@ function setupScanner() {
     }
 
     scanBtn.disabled = true;
-    scanBtn.textContent = "Analyzing...";
+    scanBtn.textContent = "Uploading...";
     scanBtn.setAttribute("aria-busy", "true");
 
     status.dataset.state = "busy";
-    status.textContent = "Uploading file for analysis...";
+    status.textContent = "Preparing secure upload...";
 
     if (analysisFileName) {
       analysisFileName.textContent = selectedFile.name;
@@ -271,24 +272,128 @@ function setupScanner() {
     analysisPanel.classList.remove("hidden");
 
     try {
+      // Wait until Firebase has initialized.
+      const firebase = await new Promise((resolve, reject) => {
+        if (window.staticShieldFirebase) {
+          resolve(window.staticShieldFirebase);
+          return;
+        }
+
+        const onReady = () => {
+          cleanup();
+          resolve(window.staticShieldFirebase);
+        };
+
+        const onError = () => {
+          cleanup();
+          reject(new Error("Firebase initialization failed."));
+        };
+
+        const cleanup = () => {
+          window.removeEventListener(
+            "staticshield-firebase-ready",
+            onReady
+          );
+          window.removeEventListener(
+            "staticshield-firebase-error",
+            onError
+          );
+        };
+
+        window.addEventListener(
+          "staticshield-firebase-ready",
+          onReady,
+          { once: true }
+        );
+
+        window.addEventListener(
+          "staticshield-firebase-error",
+          onError,
+          { once: true }
+        );
+      });
+
+      const user = firebase.auth.currentUser || firebase.user;
+
+      if (!user) {
+        throw new Error("Unable to authenticate with Firebase.");
+      }
+
       await showProgress(
-        0, 8, "Validating the uploaded executable..."
+        0,
+        5,
+        "Preparing your executable for secure upload..."
       );
 
-      const formData = new FormData();
-      formData.append("file", selectedFile);
+      // Create a unique Storage path for this user's upload.
+      const safeName = selectedFile.name
+        .replace(/[^a-zA-Z0-9._-]/g, "_");
 
-      await showProgress(
-        1, 34, "Extracting EMBER static features..."
+      const storagePath =
+        `incoming/${user.uid}/${crypto.randomUUID()}-${safeName}`;
+
+      const storageReference = firebase.ref(
+        firebase.storage,
+        storagePath
       );
 
+      status.textContent = "Uploading executable to secure storage...";
+
+      // Upload with resumable support and real upload progress.
+      await new Promise((resolve, reject) => {
+        const uploadTask = firebase.uploadBytesResumable(
+          storageReference,
+          selectedFile,
+          {
+            contentType: "application/octet-stream"
+          }
+        );
+
+        uploadTask.on(
+          "state_changed",
+
+          snapshot => {
+            const percent = Math.round(
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            );
+
+            const displayPercent = 5 + Math.round(percent * 0.55);
+
+            updateAnalysisProgress(
+              0,
+              displayPercent,
+              `Uploading executable... ${percent}%`
+            );
+          },
+
+          error => reject(error),
+
+          () => resolve()
+        );
+      });
+
       await showProgress(
-        2, 63, "Running Random Forest and LightGBM classifiers..."
+        1,
+        65,
+        "Upload complete. Preparing static malware analysis..."
       );
 
+      status.textContent = "Running Random Forest and LightGBM...";
+
+      // Obtain a Firebase ID token for backend verification.
+      const idToken = await user.getIdToken();
+
+      // Send only the Storage path to Cloud Run.
       const response = await fetch("/api/scan", {
         method: "POST",
-        body: formData
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${idToken}`
+        },
+        body: JSON.stringify({
+          storagePath,
+          fileName: selectedFile.name
+        })
       });
 
       const result = await response.json();
@@ -298,10 +403,14 @@ function setupScanner() {
       }
 
       await showProgress(
-        3, 87, "Comparing model predictions and preparing the report..."
+        2,
+        90,
+        "Comparing both model predictions..."
       );
 
+      // Preserve the existing browser-based scan history.
       const history = loadHistory();
+
       history.unshift(result);
       saveHistory(history.slice(0, 50));
 
