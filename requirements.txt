@@ -1,0 +1,10 @@
+
+Flask
+gunicorn
+numpy==1.26.4
+pandas
+scikit-learn
+lightgbm
+joblib
+lief
+firebase-admin
