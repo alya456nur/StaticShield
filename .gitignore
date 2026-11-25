@@ -5,14 +5,22 @@
 **/data/processed/*.npy
 **/data/processed/*.npz
 
+# ==========================================
 # RAW DATASETS
+# ==========================================
 **/data/raw/
-ember/
 ember-master/
+
+# Keep only the EMBER source files needed by the backend.
+# Do not ignore the entire ember/ directory because
+# Docker needs ember/ember/features.py.
+# Review the files before committing.
 
 # ==========================================
 # TRAINED MODELS
 # ==========================================
+# Model files are excluded because they may be large.
+# Provide them separately if needed to run the backend.
 models/*.joblib
 models/*.pkl
 models/*.model
@@ -25,13 +33,28 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.cache/
 
+# Python build artifacts
+build/
+dist/
+
+# ==========================================
 # VIRTUAL ENVIRONMENTS
+# ==========================================
 .venv/
 venv/
 env/
 
+# ==========================================
 # JUPYTER
+# ==========================================
 .ipynb_checkpoints/
 
 # ==========================================
@@ -48,9 +71,11 @@ tmp/
 .env
 .env.*
 !.env.example
+
 *.pem
 *.key
 *.jks
+
 service-account*.json
 firebase-adminsdk*.json
 
@@ -74,3 +99,15 @@ ui-debug.log
 .idea/
 .DS_Store
 Thumbs.db
+
+# Editor temporary files
+*.swp
+*.swo
+*~
+
+# ==========================================
+# LOCAL DATABASES
+# ==========================================
+instance/
+*.sqlite
+*.sqlite3
